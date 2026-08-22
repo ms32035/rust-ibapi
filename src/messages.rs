@@ -1129,12 +1129,14 @@ pub const SYSTEM_MESSAGE_CODES: [i32; 4] = [
 
 /// Data-advisory codes that TWS sends on a request which then proceeds
 /// normally. The request is *not* rejected — the advisory announces a
-/// fallback (delayed market data) and the requested data follows, so these
-/// are informational notices, not errors. Classifying them as errors would
+/// fallback (delayed market data, or historical data delivered without its
+/// up-to-the-second tail) and the requested data follows, so these are
+/// informational notices, not errors. Classifying them as errors would
 /// terminate the subscription before its data arrives.
+/// - 2188: Up-to-the-second historical data requires additional subscription for the API.
 /// - 10089: Requested market data requires additional subscription for API; delayed market data is available.
 /// - 10167: Requested market data is not subscribed. Displaying delayed market data.
-pub const DATA_ADVISORY_CODES: [i32; 2] = [10089, 10167];
+pub const DATA_ADVISORY_CODES: [i32; 3] = [2188, 10089, 10167];
 
 /// Data-farm codes reporting a healthy connection ("…connection is OK").
 /// Subset of [`WARNING_CODE_RANGE`]; classified [`ConnectivityStatus::Ok`].
@@ -1187,7 +1189,7 @@ pub const HANDSHAKE_DECODE_FAILURE_CODE: i32 = -4;
 /// 2. [`Warning`](Self::Warning) — 2100..=2169.
 /// 3. [`SystemMessage`](Self::SystemMessage) — 1100, 1101, 1102, 1300.
 /// 4. [`OrderRejection`](Self::OrderRejection) — 200..=399, excluding 202 by precedence.
-/// 5. [`DataAdvisory`](Self::DataAdvisory) — [`DATA_ADVISORY_CODES`] (10089, 10167).
+/// 5. [`DataAdvisory`](Self::DataAdvisory) — [`DATA_ADVISORY_CODES`] (2188, 10089, 10167).
 /// 6. [`Error`](Self::Error) — everything else.
 ///
 /// Marked `#[non_exhaustive]` so IBKR can introduce new code ranges without a
@@ -1217,7 +1219,8 @@ pub enum NoticeCategory {
     /// Order rejection (codes 200..=399).
     OrderRejection,
     /// Data advisory ([`DATA_ADVISORY_CODES`]): the request proceeded with a
-    /// fallback (delayed market data) rather than failing. Informational.
+    /// fallback (delayed market data, or historical data without its
+    /// up-to-the-second tail) rather than failing. Informational.
     DataAdvisory,
     /// Any other error code.
     Error,
